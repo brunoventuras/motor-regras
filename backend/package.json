@@ -1,0 +1,43 @@
+{
+  "name": "motor-regras-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run src/motor",
+    "test:watch": "vitest src/motor",
+    "db:seed": "prisma db execute --file ../database/seed.sql",
+    "dev": "tsx watch --env-file=../.env src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test:api": "vitest run src/api.integracao.test.ts"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.20.4",
+    "@types/supertest": "^7.2.1",
+    "prettier": "^3.9.9",
+    "supertest": "^7.3.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.1"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "bcryptjs": "^3.0.3",
+    "decimal.js": "^10.6.0",
+    "dotenv": "^18.0.3",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "prisma": "^7.10.0",
+    "zod": "^4.6.5"
+  }
+}

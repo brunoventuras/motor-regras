@@ -1,0 +1,242 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../backend/src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Campos do contexto de cálculo que uma condição pode avaliar.
+// Cada valor exige um resolvedor no motor, por isso é ENUM e não tabela.
+enum CampoCondicao {
+  servico
+  categoria_cliente
+  regiao
+  quantidade
+  faixa_utilizacao
+
+  @@map("campo_condicao")
+}
+
+// Comparações suportadas pelo motor.
+enum OperadorCondicao {
+  igual
+  diferente
+  em
+  maior
+  maior_igual
+  menor
+  menor_igual
+  entre
+
+  @@map("operador_condicao")
+}
+
+// Efeitos que uma regra pode aplicar sobre o subtotal unitário.
+enum TipoAcao {
+  desconto_percentual
+  acrescimo_percentual
+  desconto_valor
+  acrescimo_valor
+  acrescimo_faixa
+
+  @@map("tipo_acao")
+}
+
+// Motivo registrado na memória para cada regra avaliada.
+enum ResultadoAvaliacao {
+  aplicada
+  condicao_nao_atendida
+  superada_no_grupo
+  sem_faixa
+
+  @@map("resultado_avaliacao")
+}
+
+// Serviço contratável. O valor base é o preço unitário de tabela.
+model Servico {
+  id           Int      @id @default(autoincrement())
+  codigo       String   @unique @db.VarChar(20)
+  nome         String   @unique @db.VarChar(100)
+  valorBase    Decimal  @map("valor_base") @db.Decimal(12, 2)
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm DateTime @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  calculos CalculoExecutado[]
+
+  @@map("servico")
+}
+
+// Categoria do cliente, usada apenas como critério em condições.
+model CategoriaCliente {
+  id           Int      @id @default(autoincrement())
+  codigo       String   @unique @db.VarChar(20)
+  nome         String   @unique @db.VarChar(100)
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm DateTime @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  calculos CalculoExecutado[]
+
+  @@map("categoria_cliente")
+}
+
+// Região de atendimento. O fator compõe o preço de tabela junto com o valor base.
+model Regiao {
+  id           Int      @id @default(autoincrement())
+  codigo       String   @unique @db.VarChar(20)
+  nome         String   @unique @db.VarChar(100)
+  fatorPreco   Decimal  @map("fator_preco") @db.Decimal(6, 4)
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm DateTime @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  calculos CalculoExecutado[]
+
+  @@map("regiao")
+}
+
+// Faixa de quantidade. Quantidade final nula representa "sem limite".
+// A sobreposição entre faixas ativas é bloqueada por constraint na migration.
+model FaixaUtilizacao {
+  id                Int      @id @default(autoincrement())
+  quantidadeInicial Int      @map("quantidade_inicial")
+  quantidadeFinal   Int?     @map("quantidade_final")
+  acrescimo         Decimal  @db.Decimal(5, 2)
+  ativo             Boolean  @default(true)
+  criadoEm          DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm      DateTime @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  @@map("faixa_utilizacao")
+}
+
+// Grupo exclusivo: entre as regras do mesmo grupo, só a primeira que atender é aplicada.
+model GrupoRegra {
+  id           Int      @id @default(autoincrement())
+  nome         String   @unique @db.VarChar(60)
+  descricao    String?  @db.VarChar(255)
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm DateTime @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  regras Regra[]
+
+  @@map("grupo_regra")
+}
+
+// Usuário do sistema. Somente autorizados alteram regras e catálogos.
+model Usuario {
+  id           Int      @id @default(autoincrement())
+  login        String   @unique @db.VarChar(60)
+  senhaHash    String   @map("senha_hash") @db.VarChar(100)
+  nome         String   @db.VarChar(100)
+  autorizado   Boolean  @default(false)
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm DateTime @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  regrasCriadas     Regra[]            @relation("RegraCriadaPor")
+  regrasAtualizadas Regra[]            @relation("RegraAtualizadaPor")
+  calculos          CalculoExecutado[]
+
+  @@map("usuario")
+}
+
+// Regra de cálculo. Avaliada por prioridade crescente, com desempate por criado_em e id.
+model Regra {
+  id              Int       @id @default(autoincrement())
+  codigo          String    @unique @db.VarChar(20)
+  nome            String    @db.VarChar(100)
+  prioridade      Int
+  ativo           Boolean   @default(true)
+  vigenciaInicio  DateTime  @default(now()) @map("vigencia_inicio") @db.Timestamptz(3)
+  vigenciaFim     DateTime? @map("vigencia_fim") @db.Timestamptz(3)
+  tipoAcao        TipoAcao  @map("tipo_acao")
+  valorAcao       Decimal?  @map("valor_acao") @db.Decimal(12, 2)
+  grupoId         Int?      @map("grupo_id")
+  criadoPorId     Int       @map("criado_por_id")
+  atualizadoPorId Int       @map("atualizado_por_id")
+  criadoEm        DateTime  @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm    DateTime  @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  grupo         GrupoRegra?     @relation(fields: [grupoId], references: [id])
+  criadoPor     Usuario         @relation("RegraCriadaPor", fields: [criadoPorId], references: [id])
+  atualizadoPor Usuario         @relation("RegraAtualizadaPor", fields: [atualizadoPorId], references: [id])
+  condicoes     Condicao[]
+  avaliacoes    RegraAvaliada[]
+
+  @@index([ativo, prioridade])
+  @@map("regra")
+}
+
+// Critério de uma regra. Todas as condições de uma regra são combinadas com E.
+model Condicao {
+  id           Int              @id @default(autoincrement())
+  regraId      Int              @map("regra_id")
+  campo        CampoCondicao
+  operador     OperadorCondicao
+  valor        Json
+  criadoEm     DateTime         @default(now()) @map("criado_em") @db.Timestamptz(3)
+  atualizadoEm DateTime         @updatedAt @map("atualizado_em") @db.Timestamptz(3)
+
+  regra Regra @relation(fields: [regraId], references: [id], onDelete: Cascade)
+
+  @@index([regraId])
+  @@map("condicao")
+}
+
+// Execução de um cálculo, com cópia dos dados de catálogo usados naquele momento.
+model CalculoExecutado {
+  id                   Int      @id @default(autoincrement())
+  usuarioId            Int      @map("usuario_id")
+  servicoId            Int      @map("servico_id")
+  servicoNome          String   @map("servico_nome") @db.VarChar(100)
+  valorBase            Decimal  @map("valor_base") @db.Decimal(12, 2)
+  categoriaClienteId   Int      @map("categoria_cliente_id")
+  categoriaNome        String   @map("categoria_nome") @db.VarChar(100)
+  regiaoId             Int      @map("regiao_id")
+  regiaoNome           String   @map("regiao_nome") @db.VarChar(100)
+  fatorPreco           Decimal  @map("fator_preco") @db.Decimal(6, 4)
+  quantidade           Int
+  faixaDescricao       String?  @map("faixa_descricao") @db.VarChar(60)
+  valorUnitarioInicial Decimal  @map("valor_unitario_inicial") @db.Decimal(12, 2)
+  valorUnitarioFinal   Decimal  @map("valor_unitario_final") @db.Decimal(12, 2)
+  valorTotal           Decimal  @map("valor_total") @db.Decimal(14, 2)
+  executadoEm          DateTime @default(now()) @map("executado_em") @db.Timestamptz(3)
+
+  usuario          Usuario          @relation(fields: [usuarioId], references: [id])
+  servico          Servico          @relation(fields: [servicoId], references: [id])
+  categoriaCliente CategoriaCliente @relation(fields: [categoriaClienteId], references: [id])
+  regiao           Regiao           @relation(fields: [regiaoId], references: [id])
+  regrasAvaliadas  RegraAvaliada[]
+
+  @@index([executadoEm])
+  @@map("calculo_executado")
+}
+
+// Trilha de uma regra dentro de um cálculo, com cópia da regra como estava na execução.
+model RegraAvaliada {
+  id                 Int                @id @default(autoincrement())
+  calculoExecutadoId Int                @map("calculo_executado_id")
+  regraId            Int                @map("regra_id")
+  ordemAvaliacao     Int                @map("ordem_avaliacao")
+  regraCodigo        String             @map("regra_codigo") @db.VarChar(20)
+  regraNome          String             @map("regra_nome") @db.VarChar(100)
+  prioridade         Int
+  grupoNome          String?            @map("grupo_nome") @db.VarChar(60)
+  tipoAcao           TipoAcao           @map("tipo_acao")
+  valorAcao          Decimal?           @map("valor_acao") @db.Decimal(12, 2)
+  condicoes          Json
+  resultado          ResultadoAvaliacao
+  valorAntes         Decimal            @map("valor_antes") @db.Decimal(12, 2)
+  valorDepois        Decimal            @map("valor_depois") @db.Decimal(12, 2)
+  delta              Decimal            @db.Decimal(12, 2)
+
+  calculoExecutado CalculoExecutado @relation(fields: [calculoExecutadoId], references: [id], onDelete: Cascade)
+  regra            Regra            @relation(fields: [regraId], references: [id])
+
+  @@index([calculoExecutadoId])
+  @@map("regra_avaliada")
+}
