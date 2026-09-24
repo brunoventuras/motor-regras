@@ -1,0 +1,4 @@
+backend/src/generated/
+**/dist/
+**/node_modules/
+database/migrations/
