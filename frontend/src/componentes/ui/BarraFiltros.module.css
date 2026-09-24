@@ -1,0 +1,46 @@
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  padding: var(--espaco-3) var(--espaco-4);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.busca {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  flex: 1;
+  max-width: 360px;
+  height: 36px;
+  padding: 0 var(--espaco-3);
+  border: 1px solid var(--cor-borda-forte);
+  border-radius: var(--raio-pilula);
+  color: var(--cor-texto-suave);
+}
+
+.busca:focus-within {
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px var(--cor-primaria-suave);
+}
+
+.busca input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--cor-texto);
+}
+
+.alternar {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+  cursor: pointer;
+  user-select: none;
+}

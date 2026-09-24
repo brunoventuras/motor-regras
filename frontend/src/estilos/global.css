@@ -1,0 +1,58 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-family: var(--fonte);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--cor-primaria);
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cor-primaria-clara);
+  outline-offset: 2px;
+}
+
+.Toastify__toast {
+  border-radius: var(--raio-medio);
+  font-family: var(--fonte);
+  font-size: 13.5px;
+  box-shadow: var(--sombra-cartao);
+}

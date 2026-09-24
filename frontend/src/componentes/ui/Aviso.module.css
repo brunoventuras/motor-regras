@@ -1,0 +1,23 @@
+.aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+  padding: var(--espaco-3) var(--espaco-4);
+  border-radius: var(--raio-medio);
+  font-size: 13px;
+}
+
+.aviso svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.informativo {
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria-forte);
+}
+
+.alerta {
+  background: var(--cor-alerta-suave);
+  color: var(--cor-alerta);
+}

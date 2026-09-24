@@ -1,0 +1,35 @@
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: var(--raio-pilula);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sucesso {
+  background: var(--cor-sucesso-suave);
+  color: var(--cor-sucesso);
+}
+
+.alerta {
+  background: var(--cor-alerta-suave);
+  color: var(--cor-alerta);
+}
+
+.perigo {
+  background: var(--cor-perigo-suave);
+  color: var(--cor-perigo);
+}
+
+.neutro {
+  background: var(--cor-neutra-suave);
+  color: var(--cor-texto-secundario);
+}
+
+.informativo {
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria);
+}

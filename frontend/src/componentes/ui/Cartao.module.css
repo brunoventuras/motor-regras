@@ -1,0 +1,48 @@
+.cartao {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-grande);
+  box-shadow: var(--sombra-cartao);
+}
+
+.semEspaco {
+  overflow: hidden;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  padding: var(--espaco-4) var(--espaco-5);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.cabecalho > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.titulo {
+  position: relative;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.descricao {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.corpo {
+  padding: var(--espaco-5);
+}
+
+.compacto .cabecalho {
+  padding: var(--espaco-3) var(--espaco-4);
+}
+
+.compacto .corpo {
+  padding: var(--espaco-4);
+}

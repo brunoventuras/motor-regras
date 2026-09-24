@@ -1,0 +1,41 @@
+.ajuda {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 4px;
+  color: var(--cor-texto-suave);
+  cursor: help;
+}
+
+.ajuda:hover,
+.ajuda:focus {
+  outline: none;
+  color: var(--cor-primaria);
+}
+
+.balao {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 10;
+  width: 100%;
+  min-width: 180px;
+  max-width: 320px;
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--raio-medio);
+  background: var(--cor-escura);
+  color: var(--cor-texto-invertido);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity var(--transicao);
+  pointer-events: none;
+}
+
+.ajuda:hover .balao,
+.ajuda:focus .balao {
+  visibility: visible;
+  opacity: 1;
+}
